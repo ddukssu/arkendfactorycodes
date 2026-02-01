@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Quicksand:wght@400;600&display=swap');
+
+:root {
+    --dark: #323743;
+    --blue: #94defe;
+    --cream: #fff5e9;
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--cream);
+    color: var(--dark);
+    font-family: 'Quicksand', sans-serif;
+}
+
+h1, h2, h3, h4, h5, .navbar-brand, .btn-cute, .offcanvas-title {
+    font-family: 'Bubblegum Sans', cursive;
+}
+
+.btn-cute {
+    background-color: var(--blue);
+    color: var(--dark);
+    border-radius: 50px;
+    padding: 8px 24px;
+    border: none;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-cute:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(148, 222, 254, 0.4);
+    background-color: #7accfc;
+}
+
+.card {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(50, 55, 67, 0.05);
+    background-color: var(--white);
+    transition: transform 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-img-top {
+    height: 180px;
+    object-fit: cover;
+    background-color: #eee;
+}
+
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    padding: 1rem 2rem;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background-color: var(--blue);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    font-size: 1.2rem;
+}
+
+.user-avatar:hover {
+    transform: scale(1.1);
+}
+
+.search-container {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    margin-bottom: 40px;
+}
+
+.form-control, .form-select {
+    border-radius: 20px;
+    border: 2px solid var(--blue);
+    padding: 10px 20px;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: none;
+    border-color: var(--dark);
+}
+
+.badge-material {
+    background-color: var(--blue);
+    color: var(--dark);
+    border-radius: 15px;
+    padding: 5px 12px;
+    font-size: 0.9em;
+    margin-right: 5px;
+}
+
+/* Offcanvas custom styling */
+.offcanvas {
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+}

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blueprint Details - EndfieldHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand fs-3" href="index.html">EndfieldHub</a>
+    <a href="index.html" class="btn btn-outline-dark rounded-pill btn-sm">Back to Home</a>
+  </div>
+</nav>
+
+<div class="container mt-4 mb-5">
+  <div id="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div id="content" class="d-none">
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="card p-2">
+          <img id="dImg" src="" class="img-fluid rounded" style="width: 100%; object-fit: cover; min-height: 300px;">
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <h1 id="dTitle" class="display-6 fw-bold mb-3"></h1>
+
+        <div class="d-flex gap-3 mb-4">
+          <span class="badge bg-primary rounded-pill fs-6 px-3 py-2">⚡ <span id="dEnergy"></span> Energy</span>
+          <span class="badge bg-info text-dark rounded-pill fs-6 px-3 py-2">🏗️ <span id="dSpace"></span> m²</span>
+        </div>
+
+        <div class="mb-4">
+          <h5 class="fw-bold">Produces:</h5>
+          <div id="dMats"></div>
+        </div>
+
+        <div class="mb-4">
+          <h5 class="fw-bold">Required Modules:</h5>
+          <p id="dModules" class="text-muted"></p>
+        </div>
+
+        <div class="card bg-light border-0">
+          <div class="card-body position-relative">
+            <label class="small text-muted text-uppercase fw-bold mb-2">Blueprint String</label>
+            <div class="code-block bg-white p-3 rounded border" style="max-height: 150px; overflow-y: auto; word-break: break-all;">
+              <code id="dCode"></code>
+            </div>
+            <button onclick="copyDetailCode()" class="btn btn-cute btn-sm position-absolute top-0 end-0 m-3">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+<script>
+  // Load detail on page open
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
+  if(id) loadDetailView(id);
+  else window.location.href = 'index.html';
+</script>
+</body>
+</html>
