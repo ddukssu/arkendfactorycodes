@@ -39,7 +39,6 @@ exports.approveSubmission = async (req, res) => {
             space: submission.space,
             energy: submission.energy,
             materials: submission.materials,
-            // Carry over author info if needed, or simply let templates be neutral
         });
 
         await newTemplate.save();
