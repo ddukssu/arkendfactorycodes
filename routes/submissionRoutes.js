@@ -3,7 +3,6 @@ const router = express.Router();
 const submissionController = require('../controllers/submissionController');
 const { verifyToken, optionalAuth, isAdmin } = require('../middleware/authMiddleware');
 
-// Changed verifyToken to optionalAuth
 router.post('/', optionalAuth, submissionController.createSubmission);
 router.get('/', [verifyToken, isAdmin], submissionController.getPendingSubmissions);
 router.put('/:id/approve', [verifyToken, isAdmin], submissionController.approveSubmission);

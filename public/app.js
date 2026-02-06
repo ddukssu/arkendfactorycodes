@@ -11,11 +11,9 @@ function getRole() {
 document.addEventListener('DOMContentLoaded', () => {
     updateSidebar();
 
-    // Index page logic
     const grid = document.getElementById('templateGrid');
     if (grid) loadTemplates();
 
-    // Search listeners
     const searchInput = document.getElementById('searchInput');
     const materialFilter = document.getElementById('materialFilter');
     if (searchInput) {
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Update Sidebar based on Auth state
 function updateSidebar() {
     const guestMenu = document.getElementById('guestMenu');
     const userMenu = document.getElementById('userMenu');
@@ -36,7 +33,6 @@ function updateSidebar() {
         guestMenu.classList.add('d-none');
         userMenu.classList.remove('d-none');
 
-        // Show Admin link if role is admin
         if (getRole() === 'admin') {
             document.getElementById('adminLink').classList.remove('d-none');
         }
@@ -46,7 +42,6 @@ function updateSidebar() {
     }
 }
 
-// Fetch and display templates on Index
 async function loadTemplates(search = '', material = '') {
     const grid = document.getElementById('templateGrid');
     if (!grid) return;
@@ -74,7 +69,6 @@ async function loadTemplates(search = '', material = '') {
     `).join('');
 }
 
-// Load data for detail.html
 async function loadDetailView(id) {
     const res = await fetch(`${API_URL}/templates/${id}`);
     if(!res.ok) return alert('Template not found');
@@ -102,8 +96,6 @@ function copyDetailCode() {
     alert('Copied to clipboard!');
 }
 
-// Auth Handlers
-// В файле public/app.js
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -122,7 +114,7 @@ if (loginForm) {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('role', data.role);
-                alert('Login successful!'); // Добавим для проверки
+                alert('Login successful!');
                 window.location.reload();
             } else {
                 alert('Login failed: ' + (data.message || data.error || 'Unknown error'));
@@ -149,7 +141,6 @@ if (registerForm) {
 
         if (res.ok) {
             alert('Registered! Please login.');
-            // Switch to login tab using Bootstrap API
             const triggerEl = document.querySelector('#authTab button[data-bs-target="#loginTab"]');
             bootstrap.Tab.getInstance(triggerEl).show();
         } else {
@@ -164,9 +155,7 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// Submission Logic (submit.html)
 function checkAuthAndSubmit() {
-    // Validate form first
     const form = document.getElementById('submitPageForm');
     if(!form.checkValidity()) {
         form.reportValidity();
@@ -174,9 +163,8 @@ function checkAuthAndSubmit() {
     }
 
     if (getToken()) {
-        submitData(); // Logged in, submit directly
+        submitData();
     } else {
-        // Guest: Show warning modal
         const modal = new bootstrap.Modal(document.getElementById('guestWarningModal'));
         modal.show();
     }
@@ -215,7 +203,6 @@ async function submitData() {
     }
 }
 
-// Admin Logic
 async function loadSubmissions() {
     const table = document.getElementById('submissionTable');
     if (!table) return;
