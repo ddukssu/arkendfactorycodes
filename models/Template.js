@@ -10,9 +10,13 @@ const templateSchema = new mongoose.Schema({
     code: { type: String, required: true },
     imageUrl: { type: String },
     modules: { type: [String], required: true },
-    space: { type: Number, required: true },
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
+
     energy: { type: Number, required: true },
-    materials: [materialSchema]
+    materials: [materialSchema],
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    authorName: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Template', templateSchema);

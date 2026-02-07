@@ -54,7 +54,8 @@ function updateSidebar() {
     if (token) {
         guestMenu.classList.add('d-none');
         userMenu.classList.remove('d-none');
-
+        const username = localStorage.getItem('username') || 'Endministrator';
+        document.getElementById('userEmailDisplay').innerText = username;
         if (getRole() === 'admin') {
             document.getElementById('adminLink').classList.remove('d-none');
         }
@@ -72,33 +73,86 @@ async function loadTemplates(search = '', material = '') {
     if (search) url += `search=${search}&`;
     if (material) url += `material=${material}`;
 
-    const res = await fetch(url);
-    const data = await res.json();
+    try {
+        const res = await fetch(url);
+        const templates = await res.json();
 
-    grid.innerHTML = `
-    <div class="card blueprint-card h-100">
-        <div class="card-body d-flex flex-column">
-            <div class="d-flex justify-content-between mb-2">
-                <span class="badge bg-warning text-dark rounded-0">ENERGY: ${t.energy || 0}</span>
-                <small class="text-muted font-monospace">ID: ${t._id.slice(-4).toUpperCase()}</small>
-            </div>
-            
-            <h5 class="card-title text-white text-truncate">${t.title}</h5>
-            
-            <p class="card-text text-secondary small mb-2">
-                Output: <span class="text-light">${t.materials.map(m => m.name).join(', ')}</span>
-            </p>
+        if (templates.length === 0) {
+            grid.innerHTML = '<p class="text-muted text-center">No protocols found.</p>';
+            return;
+        }
 
-            <div class="mt-auto pt-3 border-top border-secondary-subtle d-flex justify-content-between align-items-center">
-                <small class="text-muted"><i class="bi bi-person"></i> ${t.authorName || 'Unknown'}</small>
-                
-                <a href="detail.html?id=${t._id}" class="btn btn-sm btn-outline-light rounded-0">
-                    VIEW PROTOCOL
-                </a>
+        grid.innerHTML = templates.map(t => `
+            <div class="col-md-6 col-lg-4">
+                <div class="card blueprint-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-warning text-dark rounded-0">ENERGY: ${t.energy || 0}</span>
+                            <small class="text-muted font-monospace">ID: ${t._id.slice(-4).toUpperCase()}</small>
+                        </div>
+                        
+                        <h5 class="card-title text-white text-truncate">${t.title}</h5>
+                        
+                        <p class="card-text text-secondary small mb-2">
+                            Output: <span class="text-light">${t.materials.map(m => m.name).join(', ')}</span>
+                        </p>
+
+                        <div class="mt-auto pt-3 border-top border-secondary-subtle d-flex justify-content-between align-items-center">
+                            <small class="text-muted"><i class="bi bi-person"></i> ${t.authorName || 'Unknown'}</small>
+                            <a href="detail.html?id=${t._id}" class="btn btn-sm btn-outline-light rounded-0">VIEW PROTOCOL</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-`;
+        `).join(''); // Важно: .join('') превращает массив строк в одну большую строку HTML
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// 2. ОБНОВЛЕННАЯ ОТПРАВКА ДАННЫХ (Width/Height)
+async function submitData() {
+    if (selectedMaterials.length === 0 || selectedModules.length === 0) {
+        alert('Please select at least one Material and one Module.');
+        return;
+    }
+
+    const materialsPayload = selectedMaterials.map(s => ({ name: s }));
+
+    // Получаем значения ширины и высоты
+    const widthVal = document.getElementById('sWidth').value;
+    const heightVal = document.getElementById('sHeight').value;
+
+    const payload = {
+        title: document.getElementById('sTitle').value,
+        energy: document.getElementById('sEnergy').value,
+        // Новые поля
+        width: widthVal,
+        height: heightVal,
+
+        imageUrl: document.getElementById('sImg').value,
+        code: document.getElementById('sCode').value,
+        materials: materialsPayload,
+        modules: selectedModules
+    };
+
+    const headers = { 'Content-Type': 'application/json' };
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_URL}/submissions`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        alert('Submitted successfully! Waiting for admin approval.');
+        window.location.href = 'index.html';
+    } else {
+        const err = await res.json();
+        alert('Error: ' + (err.error || err.message));
+    }
 }
 
 async function loadDetailView(id) {
@@ -113,7 +167,9 @@ async function loadDetailView(id) {
     document.getElementById('dTitle').innerText = t.title;
     document.getElementById('dImg').src = t.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image';
     document.getElementById('dEnergy').innerText = t.energy;
-    document.getElementById('dSpace').innerText = t.space;
+
+    document.getElementById('dSpace').innerText = `${t.width || '?'} x ${t.height || '?'}`;
+
     document.getElementById('dCode').innerText = t.code;
     document.getElementById('dModules').innerText = t.modules.join(', ');
 
@@ -121,6 +177,7 @@ async function loadDetailView(id) {
         `<span class="badge bg-secondary me-1 p-2">${m.name}</span>`
     ).join('');
 }
+
 
 function copyDetailCode() {
     const code = document.getElementById('dCode').innerText;
@@ -146,6 +203,7 @@ if (loginForm) {
             if (res.ok) {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('role', data.role);
+                localStorage.setItem('username', data.username);
                 alert('Login successful!');
                 window.location.reload();
             } else {
@@ -162,13 +220,14 @@ const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const username = document.getElementById('regUsername').value;
         const email = document.getElementById('regEmail').value;
         const password = document.getElementById('regPass').value;
 
         const res = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, email, password })
         });
 
         if (res.ok) {
@@ -244,50 +303,7 @@ function removeTag(type, index) {
     renderTags(type);
 }
 
-async function submitData() {
-    // Валидация: пользователь должен выбрать хотя бы 1 материал и модуль
-    if (selectedMaterials.length === 0 || selectedModules.length === 0) {
-        alert('Please select at least one Material and one Module.');
-        return;
-    }
 
-    // Преобразуем массив строк в формат, который ждет бэкенд: [{name: "Iron"}, ...]
-    const materialsPayload = selectedMaterials.map(s => ({ name: s }));
-
-    const payload = {
-        title: document.getElementById('sTitle').value,
-        energy: document.getElementById('sEnergy').value,
-
-        // Тут берем данные из новых полей Width/Height (если ты их уже добавил в HTML)
-        // Если еще нет, используй старое поле sSpace
-        width: document.getElementById('sWidth')?.value || 0,
-        height: document.getElementById('sHeight')?.value || 0,
-        space: (document.getElementById('sWidth')?.value || 0) * (document.getElementById('sHeight')?.value || 0), // Временный костыль для совместимости
-
-        imageUrl: document.getElementById('sImg').value,
-        code: document.getElementById('sCode').value,
-        materials: materialsPayload, // Отправляем массив из тегов
-        modules: selectedModules     // Отправляем массив строк
-    };
-
-    const headers = { 'Content-Type': 'application/json' };
-    const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    const res = await fetch(`${API_URL}/submissions`, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(payload)
-    });
-
-    if (res.ok) {
-        alert('Submitted successfully! Waiting for admin approval.');
-        window.location.href = 'index.html';
-    } else {
-        const err = await res.json();
-        alert('Error: ' + err.error);
-    }
-}
 async function loadSubmissions() {
     const table = document.getElementById('submissionTable');
     if (!table) return;

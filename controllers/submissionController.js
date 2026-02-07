@@ -1,12 +1,19 @@
 const Submission = require('../models/Submission');
 const Template = require('../models/Template');
+const User = require('../models/User');
 
 exports.createSubmission = async (req, res) => {
     try {
+        let authorName = 'Anonymous';
+        if (req.userId) {
+            const user = await User.findById(req.userId);
+            if (user) authorName = user.username;
+        }
+
         const submission = new Submission({
             ...req.body,
-            userId: req.userId || null, // Null if guest
-            authorName: req.userId ? undefined : 'Anonymous', // Add flag/name logic
+            userId: req.userId || null,
+            authorName: authorName,
             status: 'pending'
         });
         await submission.save();
@@ -28,7 +35,7 @@ exports.getPendingSubmissions = async (req, res) => {
 
 exports.approveSubmission = async (req, res) => {
     try {
-        const submission = await Submission.findById(req.params.id);
+        const submission = await Submission.findById(req.params.id).populate('userId');
         if (!submission) return res.status(404).json({ message: 'Submission not found' });
 
         const newTemplate = new Template({
@@ -36,9 +43,12 @@ exports.approveSubmission = async (req, res) => {
             code: submission.code,
             imageUrl: submission.imageUrl,
             modules: submission.modules,
-            space: submission.space,
+            width: submission.width,
+            height: submission.height,
             energy: submission.energy,
             materials: submission.materials,
+            userId: submission.userId,
+            authorName: submission.authorName
         });
 
         await newTemplate.save();

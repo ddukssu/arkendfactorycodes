@@ -10,9 +10,12 @@ const submissionSchema = new mongoose.Schema({
     code: { type: String, required: true },
     imageUrl: { type: String },
     modules: { type: [String], required: true },
-    space: { type: Number, required: true },
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
+
     energy: { type: Number, required: true },
     materials: [materialSchema],
+    authorName: { type: String, default: 'Anonymous' },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' }
 }, { timestamps: true });

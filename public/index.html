@@ -27,7 +27,7 @@
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="userSidebar">
     <div class="offcanvas-header border-bottom border-secondary-subtle">
-        <h5 class="offcanvas-title">OPERATOR MENU</h5>
+        <h5 class="offcanvas-title">ENDMINISTRATOR MENU</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body p-4">
@@ -40,7 +40,7 @@
         </div>
 
         <div id="userMenu" class="d-none">
-            <p class="text-muted small">OPERATOR: <span id="userEmailDisplay" class="text-white fw-bold">User</span></p>
+            <p class="text-muted small">ENDMINISTRATOR: <span id="userEmailDisplay" class="text-white fw-bold">User</span></p>
             <div class="d-grid gap-3">
                 <a href="submit.html" class="btn btn-cute">UPLOAD BLUEPRINT</a>
                 <a href="admin.html" id="adminLink" class="btn btn-danger d-none">ADMIN PANEL</a>
@@ -111,7 +111,7 @@
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="loginTab">
                         <form id="loginForm">
-                            <label class="small text-muted mb-1">OPERATOR ID (EMAIL)</label>
+                            <label class="small text-muted mb-1">ENDMINISTRATOR ID (EMAIL)</label>
                             <input type="email" class="form-control mb-3" required id="loginEmail">
                             <label class="small text-muted mb-1">ACCESS KEY (PASSWORD)</label>
                             <input type="password" class="form-control mb-4" required id="loginPass">
@@ -120,7 +120,8 @@
                     </div>
                     <div class="tab-pane fade" id="registerTab">
                         <form id="registerForm">
-                            <label class="small text-muted mb-1">NEW OPERATOR EMAIL</label>
+                            <label class="small text-muted mb-1">ENDMINISTRATOR NAME</label>
+                            <input type="text" class="form-control mb-3" required id="regUsername" placeholder="Enter codename"> <label class="small text-muted mb-1">NEW ENDMINISTRATOR EMAIL</label>
                             <input type="email" class="form-control mb-3" required id="regEmail">
                             <label class="small text-muted mb-1">SET PASSWORD</label>
                             <input type="password" class="form-control mb-4" required id="regPass">
