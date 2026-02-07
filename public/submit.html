@@ -8,52 +8,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        /* Специфичные стили для формы загрузки */
-        .upload-card {
-            background: rgba(26, 28, 35, 0.95);
-            border: 1px solid var(--endfield-border, #333);
-            position: relative;
-        }
-
-        .upload-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--endfield-yellow, #FFC107), transparent);
-        }
-
-        .form-label {
-            font-family: 'Rajdhani', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control {
-            background-color: #0f1014; /* Darker input background */
-            border: 1px solid var(--endfield-border, #444);
-            color: #fff;
-            border-radius: 2px;
-        }
-
-        .form-control:focus {
-            background-color: #0f1014;
-            border-color: var(--endfield-yellow, #FFC107);
-            box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.3);
-            color: #fff;
-        }
-
-        .code-area {
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            color: var(--endfield-yellow, #FFC107);
-        }
-    </style>
 </head>
 <body>
 
@@ -93,11 +47,14 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Grid Surface Area (m²)</label>
+                            <label class="form-label">Grid Dimensions (W x H)</label>
                             <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-secondary rounded-0"><i class="bi bi-grid-3x3"></i></span>
-                                <input type="number" class="form-control rounded-0" id="sSpace" placeholder="0" required>
+                                <span class="input-group-text bg-dark border-secondary text-secondary rounded-0"><i class="bi bi-arrows-move"></i></span>
+                                <input type="number" class="form-control rounded-0 text-center" id="sWidth" placeholder="W" required>
+                                <span class="input-group-text bg-dark border-secondary text-secondary rounded-0" style="border-left: 0; border-right: 0;">x</span>
+                                <input type="number" class="form-control rounded-0 text-center" id="sHeight" placeholder="H" required>
                             </div>
+                            <div class="form-text text-muted small mt-1">Example: 32 x 37 blocks</div>
                         </div>
                     </div>
 
@@ -110,17 +67,35 @@
                     <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <label class="form-label">Output Materials</label>
-                            <input type="text" class="form-control rounded-0" id="sMats" placeholder="Iron Ingot, Copper Plate..." required>
+                            <div class="input-group mb-2">
+                                <input class="form-control rounded-0" list="materialsOptions" id="materialInput" placeholder="Type to search...">
+                                <button class="btn btn-outline-secondary rounded-0" type="button" onclick="addTag('material')">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <div id="matsTags" class="d-flex flex-wrap gap-2 min-h-input"></div>
+
+                            <datalist id="materialsOptions"></datalist>
                         </div>
+
                         <div class="col-md-6">
                             <label class="form-label">Required Modules</label>
-                            <input type="text" class="form-control rounded-0" id="sModules" placeholder="Smelter, Sorter, Belt..." required>
+                            <div class="input-group mb-2">
+                                <input class="form-control rounded-0" list="modulesOptions" id="moduleInput" placeholder="Type to search...">
+                                <button class="btn btn-outline-secondary rounded-0" type="button" onclick="addTag('module')">
+                                    <i class="bi bi-plus-lg"></i>
+                                </button>
+                            </div>
+                            <div id="modsTags" class="d-flex flex-wrap gap-2 min-h-input"></div>
+
+                            <datalist id="modulesOptions"></datalist>
                         </div>
                     </div>
 
                     <div class="mb-5">
                         <label class="form-label text-warning">Blueprint Sequence (Base64 / String)</label>
-                        <textarea class="form-control code-area rounded-0" id="sCode" rows="8" placeholder="PASTE EXPORT STRING HERE..." required></textarea>
+                        <textarea class="form-control code-area rounded-0" id="sCode" rows="3" placeholder="PASTE EXPORT STRING HERE..." required></textarea>
+                        <div class="form-text text-muted small">Paste the string copied directly from the game.</div>
                     </div>
 
                     <div class="d-grid">

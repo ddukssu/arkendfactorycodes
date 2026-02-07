@@ -1,3 +1,19 @@
+const MATERIALS_DB = [
+    "Iron Ore", "Copper Ore", "Lime", "Water",
+    "Iron Ingot", "Copper Ingot", "Steel Ingot",
+    "Electronic Component", "AI Chip", "Originium Shard",
+    "Concrete", "Reinforced Plate", "Energy Block"
+];
+
+let selectedMaterials = [];
+let selectedModules = [];
+
+
+const MODULES_DB = [
+    "Smelter", "Assembler", "Sorter", "Splitter",
+    "Fluid Pump", "Refinery", "Storage Container",
+    "Power Pole", "Thermal Tower", "Conveyor Belt"
+];
 const API_URL = '/api';
 
 function getToken() {
@@ -11,8 +27,11 @@ function getRole() {
 document.addEventListener('DOMContentLoaded', () => {
     updateSidebar();
 
+    initDatalist('materialsOptions', MATERIALS_DB);
+
+    if(document.getElementById('templateGrid')) loadTemplates();
+
     const grid = document.getElementById('templateGrid');
-    if (grid) loadTemplates();
 
     const searchInput = document.getElementById('searchInput');
     const materialFilter = document.getElementById('materialFilter');
@@ -20,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => loadTemplates(searchInput.value, materialFilter.value));
         materialFilter.addEventListener('change', () => loadTemplates(searchInput.value, materialFilter.value));
     }
+
+    initDatalist('materialsOptions', MATERIALS_DB);
+    initDatalist('modulesOptions', MODULES_DB);
 });
 
 function updateSidebar() {
@@ -53,20 +75,30 @@ async function loadTemplates(search = '', material = '') {
     const res = await fetch(url);
     const data = await res.json();
 
-    grid.innerHTML = data.map(t => `
-        <div class="col-md-4">
-            <div class="card h-100" onclick="window.location.href='detail.html?id=${t._id}'">
-                <img src="${t.imageUrl || 'https://via.placeholder.com/400x200?text=No+Image'}" class="card-img-top" alt="${t.title}">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold">${t.title}</h5>
-                    <div class="mb-2">
-                        ${t.materials.map(m => `<span class="badge-material">${m.name}</span>`).join('')}
-                    </div>
-                    <p class="text-muted small mb-0">⚡ ${t.energy} | 🏗️ ${t.space}m²</p>
-                </div>
+    grid.innerHTML = `
+    <div class="card blueprint-card h-100">
+        <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="badge bg-warning text-dark rounded-0">ENERGY: ${t.energy || 0}</span>
+                <small class="text-muted font-monospace">ID: ${t._id.slice(-4).toUpperCase()}</small>
+            </div>
+            
+            <h5 class="card-title text-white text-truncate">${t.title}</h5>
+            
+            <p class="card-text text-secondary small mb-2">
+                Output: <span class="text-light">${t.materials.map(m => m.name).join(', ')}</span>
+            </p>
+
+            <div class="mt-auto pt-3 border-top border-secondary-subtle d-flex justify-content-between align-items-center">
+                <small class="text-muted"><i class="bi bi-person"></i> ${t.authorName || 'Unknown'}</small>
+                
+                <a href="detail.html?id=${t._id}" class="btn btn-sm btn-outline-light rounded-0">
+                    VIEW PROTOCOL
+                </a>
             </div>
         </div>
-    `).join('');
+    </div>
+`;
 }
 
 async function loadDetailView(id) {
@@ -169,19 +201,73 @@ function checkAuthAndSubmit() {
         modal.show();
     }
 }
+function initDatalist(id, items) {
+    const dl = document.getElementById(id);
+    if (!dl) return;
+    dl.innerHTML = items.map(i => `<option value="${i}">`).join('');
+}
+
+function addTag(type) {
+    const input = document.getElementById(type === 'material' ? 'materialInput' : 'moduleInput');
+    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (storage.includes(val)) {
+        input.value = '';
+        return;
+    }
+
+    storage.push(val);
+    renderTags(type);
+    input.value = '';
+    input.focus();
+}
+
+function renderTags(type) {
+    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+
+    container.innerHTML = storage.map((item, index) => `
+        <span class="badge bg-warning text-dark rounded-0 d-flex align-items-center gap-2">
+            ${item}
+            <i class="bi bi-x-lg cursor-pointer" onclick="removeTag('${type}', ${index})" style="cursor:pointer"></i>
+        </span>
+    `).join('');
+}
+
+function removeTag(type, index) {
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+    storage.splice(index, 1);
+    renderTags(type);
+}
 
 async function submitData() {
-    const materials = document.getElementById('sMats').value.split(',').map(s => ({ name: s.trim() }));
-    const modules = document.getElementById('sModules').value.split(',').map(s => s.trim());
+    // Валидация: пользователь должен выбрать хотя бы 1 материал и модуль
+    if (selectedMaterials.length === 0 || selectedModules.length === 0) {
+        alert('Please select at least one Material and one Module.');
+        return;
+    }
+
+    // Преобразуем массив строк в формат, который ждет бэкенд: [{name: "Iron"}, ...]
+    const materialsPayload = selectedMaterials.map(s => ({ name: s }));
 
     const payload = {
         title: document.getElementById('sTitle').value,
         energy: document.getElementById('sEnergy').value,
-        space: document.getElementById('sSpace').value,
+
+        // Тут берем данные из новых полей Width/Height (если ты их уже добавил в HTML)
+        // Если еще нет, используй старое поле sSpace
+        width: document.getElementById('sWidth')?.value || 0,
+        height: document.getElementById('sHeight')?.value || 0,
+        space: (document.getElementById('sWidth')?.value || 0) * (document.getElementById('sHeight')?.value || 0), // Временный костыль для совместимости
+
         imageUrl: document.getElementById('sImg').value,
         code: document.getElementById('sCode').value,
-        materials,
-        modules
+        materials: materialsPayload, // Отправляем массив из тегов
+        modules: selectedModules     // Отправляем массив строк
     };
 
     const headers = { 'Content-Type': 'application/json' };
@@ -202,7 +288,6 @@ async function submitData() {
         alert('Error: ' + err.error);
     }
 }
-
 async function loadSubmissions() {
     const table = document.getElementById('submissionTable');
     if (!table) return;

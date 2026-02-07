@@ -233,3 +233,46 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
     border-color: var(--endfield-yellow, #FFC107);
     color: #fff;
 }
+
+.upload-card {
+    background: rgba(26, 28, 35, 0.95);
+    border: 1px solid var(--endfield-border, #333);
+    position: relative;
+}
+
+.upload-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--endfield-yellow, #FFC107), transparent);
+}
+
+.form-label {
+    font-family: 'Rajdhani', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    background-color: #0f1014; /* Darker input background */
+    border: 1px solid var(--endfield-border, #444);
+    color: #fff;
+    border-radius: 2px;
+}
+
+.form-control:focus {
+    background-color: #0f1014;
+    border-color: var(--endfield-yellow, #FFC107);
+    box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.3);
+    color: #fff;
+}
+
+.code-area {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: var(--endfield-yellow, #FFC107);
+}

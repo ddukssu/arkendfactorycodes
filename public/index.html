@@ -61,18 +61,12 @@
         <div class="row g-3">
             <div class="col-md-8">
                 <div class="input-group">
-                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search protocol ID or name...">
+                    <input class="form-control" list="materialsOptions" id="materialFilter" placeholder="// FILTER BY MATERIAL...">
+                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('materialFilter').value = ''; loadTemplates();">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <select id="materialFilter" class="form-select">
-                    <option value="">// SELECT MATERIAL CLASS</option>
-                    <option value="Iron">Iron</option>
-                    <option value="Copper">Copper</option>
-                    <option value="Energy">Energy</option>
-                    <option value="Stone">Stone</option>
-                </select>
+                <datalist id="materialsOptions"></datalist>
             </div>
         </div>
     </div>
