@@ -1,66 +1,132 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <title>Submit Blueprint - EndfieldHub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPLOAD PROTOCOL - EndfieldHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Специфичные стили для формы загрузки */
+        .upload-card {
+            background: rgba(26, 28, 35, 0.95);
+            border: 1px solid var(--endfield-border, #333);
+            position: relative;
+        }
+
+        .upload-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--endfield-yellow, #FFC107), transparent);
+        }
+
+        .form-label {
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            background-color: #0f1014; /* Darker input background */
+            border: 1px solid var(--endfield-border, #444);
+            color: #fff;
+            border-radius: 2px;
+        }
+
+        .form-control:focus {
+            background-color: #0f1014;
+            border-color: var(--endfield-yellow, #FFC107);
+            box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.3);
+            color: #fff;
+        }
+
+        .code-area {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--endfield-yellow, #FFC107);
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand fs-3" href="index.html">EndfieldHub</a>
-        <a href="index.html" class="btn btn-outline-dark rounded-pill btn-sm">Back to Home</a>
+<nav class="navbar navbar-expand-lg sticky-top border-bottom border-secondary-subtle" style="background: rgba(15, 16, 20, 0.9); backdrop-filter: blur(10px);">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fs-3" href="index.html">
+            <i class="bi bi-cpu-fill me-2"></i>Endfield<span class="text-white">Hub</span>
+        </a>
+        <a href="index.html" class="btn btn-outline-light rounded-0 border-secondary btn-sm d-flex align-items-center">
+            <i class="bi bi-x-lg me-2"></i> CANCEL UPLOAD
+        </a>
     </div>
 </nav>
 
-<div class="container mt-4 mb-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card p-4 shadow-sm">
-                <h2 class="mb-4 text-center">Submit New Layout</h2>
+            <div class="text-center mb-4">
+                <h2 class="display-6 fw-bold text-white" style="font-family: 'Rajdhani', sans-serif;">INITIATE NEW PROTOCOL</h2>
+                <p class="text-muted small">PLEASE PROVIDE VALID CONFIGURATION DATA</p>
+            </div>
+
+            <div class="card upload-card p-4 p-md-5 rounded-0 shadow-lg">
 
                 <form id="submitPageForm">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Title</label>
-                        <input type="text" class="form-control" id="sTitle" required>
+                    <div class="mb-4">
+                        <label class="form-label text-warning">Protocol Designation (Title)</label>
+                        <input type="text" class="form-control form-control-lg rounded-0" id="sTitle" placeholder="e.g. HIGH-EFFICIENCY IRON SMELTING" required>
                     </div>
 
-                    <div class="row g-3 mb-3">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
-                            <label class="form-label">Energy Consumed</label>
-                            <input type="number" class="form-control" id="sEnergy" required>
+                            <label class="form-label">Energy Output / Drain</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary rounded-0"><i class="bi bi-lightning-fill"></i></span>
+                                <input type="number" class="form-control rounded-0" id="sEnergy" placeholder="0" required>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Space (sqm)</label>
-                            <input type="number" class="form-control" id="sSpace" required>
+                            <label class="form-label">Grid Surface Area (m²)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary rounded-0"><i class="bi bi-grid-3x3"></i></span>
+                                <input type="number" class="form-control rounded-0" id="sSpace" placeholder="0" required>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Screenshot URL (Optional)</label>
-                        <input type="url" class="form-control" id="sImg" placeholder="https://...">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Materials Produced (Comma separated)</label>
-                        <input type="text" class="form-control" id="sMats" placeholder="e.g. Iron Ingot, Copper Plate" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Modules Used (Comma separated)</label>
-                        <input type="text" class="form-control" id="sModules" placeholder="e.g. Smelter, Sorter, Belt" required>
                     </div>
 
                     <div class="mb-4">
-                        <label class="form-label fw-bold">Blueprint Code</label>
-                        <textarea class="form-control font-monospace" id="sCode" rows="6" required></textarea>
+                        <label class="form-label">Visual Reference (Image URL)</label>
+                        <input type="url" class="form-control rounded-0" id="sImg" placeholder="https://...">
+                        <div class="form-text text-muted small fst-italic">* Optional visual confirmation</div>
+                    </div>
+
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Output Materials</label>
+                            <input type="text" class="form-control rounded-0" id="sMats" placeholder="Iron Ingot, Copper Plate..." required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Required Modules</label>
+                            <input type="text" class="form-control rounded-0" id="sModules" placeholder="Smelter, Sorter, Belt..." required>
+                        </div>
+                    </div>
+
+                    <div class="mb-5">
+                        <label class="form-label text-warning">Blueprint Sequence (Base64 / String)</label>
+                        <textarea class="form-control code-area rounded-0" id="sCode" rows="8" placeholder="PASTE EXPORT STRING HERE..." required></textarea>
                     </div>
 
                     <div class="d-grid">
-                        <button type="button" class="btn btn-cute btn-lg" onclick="checkAuthAndSubmit()">Submit Blueprint</button>
+                        <button type="button" class="btn btn-cute btn-lg" onclick="checkAuthAndSubmit()">
+                            <i class="bi bi-cloud-upload-fill me-2"></i> UPLOAD DATA TO SERVER
+                        </button>
                     </div>
                 </form>
             </div>
@@ -69,19 +135,19 @@
 </div>
 
 <div class="modal fade" id="guestWarningModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning-subtle">
-                <h5 class="modal-title">Submitting as Guest</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border border-warning" style="background-color: #1a1c23;">
+            <div class="modal-header border-bottom border-warning">
+                <h5 class="modal-title text-warning" style="font-family: 'Rajdhani', sans-serif;">⚠️ SECURITY ALERT: UNREGISTERED SOURCE</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>You are not logged in. If you submit now, this blueprint will be credited to <strong>Anonymous</strong>.</p>
-                <p class="mb-0">Do you want to continue or login first?</p>
+            <div class="modal-body text-light">
+                <p>You are not logged in. Proceeding will tag this protocol as <strong>ANONYMOUS</strong>.</p>
+                <p class="mb-0 small text-muted">Anonymous uploads cannot be edited or deleted later.</p>
             </div>
             <div class="modal-footer border-0">
-                <a href="index.html" class="btn btn-outline-dark rounded-pill">Go Login</a>
-                <button type="button" class="btn btn-cute" onclick="submitData()">Continue as Anonymous</button>
+                <a href="index.html" class="btn btn-outline-light btn-sm rounded-0">LOGIN FIRST</a>
+                <button type="button" class="btn btn-cute btn-sm" onclick="submitData()">IGNORE & PROCEED</button>
             </div>
         </div>
     </div>

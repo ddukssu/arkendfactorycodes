@@ -1,43 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Endfield</title>
+    <title>OPERATOR CONSOLE - Endfield</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="index.html">EndfieldHub <span class="badge bg-danger">Admin</span></a>
-        <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-pill">Logout</button>
+
+<nav class="navbar navbar-expand-lg border-bottom border-secondary-subtle" style="background: rgba(15, 16, 20, 0.9);">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fs-4" href="index.html">
+            <i class="bi bi-shield-lock-fill me-2 text-danger"></i>ADMIN<span class="text-white">PANEL</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <span class="text-muted small font-monospace d-none d-md-block">SYS_ADMIN_MODE: ACTIVE</span>
+            <button onclick="logout()" class="btn btn-outline-danger btn-sm rounded-0">
+                <i class="bi bi-power"></i> LOGOUT
+            </button>
+        </div>
     </div>
 </nav>
 
 <div class="container mt-5">
-    <h2 class="mb-4">Pending Submissions</h2>
-    <div id="adminMessage" class="alert alert-info d-none"></div>
-    <div class="table-responsive bg-white p-4 rounded-4 shadow-sm">
-        <table class="table align-middle">
-            <thead>
-            <tr>
-                <th>Title</th>
-                <th>User</th>
-                <th>Materials</th>
-                <th>Code Preview</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody id="submissionTable">
-            </tbody>
-        </table>
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="display-6 fw-bold text-white mb-0" style="font-family: 'Rajdhani', sans-serif;">INCOMING TRANSMISSIONS</h2>
+            <p class="text-muted small mb-0">PENDING APPROVAL QUEUE</p>
+        </div>
+        <button class="btn btn-outline-light btn-sm rounded-0" onclick="loadSubmissions()">
+            <i class="bi bi-arrow-clockwise"></i> REFRESH DATA
+        </button>
+    </div>
+
+    <div class="admin-table-container p-0 rounded-0 shadow-lg">
+        <div class="table-responsive">
+            <table class="table table-dark align-middle mb-0 table-hover">
+                <thead class="text-secondary small text-uppercase" style="font-family: 'Rajdhani', sans-serif;">
+                <tr>
+                    <th class="ps-4">ID / Date</th>
+                    <th>Operator (User)</th>
+                    <th>Protocol Name</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Control</th>
+                </tr>
+                </thead>
+                <tbody id="submissionTable" class="border-top-0">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reviewModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-0 border border-secondary" style="background-color: #1a1c23;">
+
+            <div class="modal-header border-bottom border-secondary p-3">
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-danger rounded-0 me-2">ADMIN MODE</span>
+                    <h5 class="modal-title text-white font-monospace">PROTOCOL_VERIFICATION_TOOL</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body p-0">
+                <div class="row g-0 h-100">
+
+                    <div class="col-lg-6 border-end border-secondary p-4">
+                        <h6 class="text-muted text-uppercase mb-3 border-bottom border-secondary pb-2">Source Data (Read Only)</h6>
+
+                        <div class="mb-3">
+                            <label class="text-secondary small">Submitted By</label>
+                            <input type="text" id="reviewUser" class="form-control form-control-sm bg-dark text-muted border-0 rounded-0" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="text-secondary small">Original Description</label>
+                            <textarea id="reviewDesc" class="form-control form-control-sm bg-dark text-muted border-0 rounded-0" rows="2" readonly></textarea>
+                        </div>
+
+                        <label class="text-warning small fw-bold mb-1">RAW BLUEPRINT STRING</label>
+                        <div class="position-relative">
+                            <textarea id="reviewCodeSource" class="form-control bg-black text-success font-monospace rounded-0 border-secondary small" rows="10" readonly></textarea>
+                            <button onclick="copySourceCode()" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-0 opacity-75">
+                                <i class="bi bi-clipboard"></i> COPY FOR GAME
+                            </button>
+                        </div>
+                        <div class="form-text text-muted small mt-1">
+                            <i class="bi bi-info-circle"></i> Copy this code, switch to Arknights: Endfield, and verify functionality.
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 p-4 bg-black bg-opacity-25">
+                        <h6 class="text-white text-uppercase mb-3 border-bottom border-secondary pb-2">Final Publication Data</h6>
+
+                        <form id="publishForm">
+                            <div class="mb-3">
+                                <label class="review-label">Display Title</label>
+                                <input type="text" id="editTitle" class="form-control admin-input rounded-0">
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="review-label">Energy (MW)</label>
+                                    <input type="number" id="editEnergy" class="form-control admin-input rounded-0">
+                                </div>
+                                <div class="col-6">
+                                    <label class="review-label">Dimensions (WxH)</label>
+                                    <div class="d-flex gap-1">
+                                        <input type="number" id="editWidth" placeholder="W" class="form-control admin-input rounded-0 text-center">
+                                        <span class="text-muted py-2">x</span>
+                                        <input type="number" id="editHeight" placeholder="H" class="form-control admin-input rounded-0 text-center">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="review-label">Verified Image URL (Screenshot)</label>
+                                <div class="input-group">
+                                    <input type="url" id="editImg" class="form-control admin-input rounded-0" placeholder="Paste your screenshot link here...">
+                                    <button type="button" class="btn btn-outline-secondary rounded-0" onclick="testImage()">Test</button>
+                                </div>
+                                <div id="imgPreview" class="mt-2 border border-secondary bg-dark d-flex align-items-center justify-content-center text-muted small" style="height: 100px; overflow:hidden;">
+                                    NO IMAGE PREVIEW
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="review-label">Output Materials</label>
+                                <input type="text" id="editMats" class="form-control admin-input rounded-0">
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-top border-secondary bg-dark p-3 justify-content-between">
+                <button type="button" class="btn btn-outline-danger rounded-0" onclick="rejectSubmission()">
+                    <i class="bi bi-trash3-fill me-2"></i>REJECT & DELETE
+                </button>
+                <div>
+                    <button type="button" class="btn btn-outline-light rounded-0 me-2" data-bs-dismiss="modal">CANCEL</button>
+                    <button type="button" class="btn btn-cute rounded-0 px-4" onclick="approveAndPublish()">
+                        <i class="bi bi-check-lg me-2"></i>APPROVE & PUBLISH
+                    </button>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
 <script src="app.js"></script>
 <script>
     if(localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
+
     loadSubmissions();
 </script>
 </body>
