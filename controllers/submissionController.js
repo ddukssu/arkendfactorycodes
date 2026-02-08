@@ -5,9 +5,12 @@ const User = require('../models/User');
 exports.createSubmission = async (req, res) => {
     try {
         let authorName = 'Anonymous';
+
         if (req.userId) {
             const user = await User.findById(req.userId);
-            if (user) authorName = user.username;
+            if (user) {
+                authorName = user.username || user.email.split('@')[0];
+            }
         }
 
         const submission = new Submission({
@@ -16,6 +19,7 @@ exports.createSubmission = async (req, res) => {
             authorName: authorName,
             status: 'pending'
         });
+
         await submission.save();
         res.status(201).json({ message: 'Submission sent for approval' });
     } catch (error) {
@@ -25,8 +29,8 @@ exports.createSubmission = async (req, res) => {
 
 exports.getPendingSubmissions = async (req, res) => {
     try {
-        const submissions = await Submission.find({ status: 'pending' }).populate('userId', 'email');
-        res.status(200).json(submissions);
+        const submissions = await Submission.find().populate('userId', 'email username');
+        res.json(submissions);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -42,15 +46,14 @@ exports.approveSubmission = async (req, res) => {
             width: req.body.width || submission.width,
             height: req.body.height || submission.height,
             energy: req.body.energy || submission.energy,
-
             imageUrl: req.body.imageUrl || submission.imageUrl,
-
             materials: req.body.materials || submission.materials,
+
             modules: submission.modules,
             code: submission.code,
 
             userId: submission.userId ? submission.userId._id : null,
-            authorName: submission.authorName || (submission.userId ? submission.userId.email : 'Anonymous')
+            authorName: submission.authorName || 'Anonymous'
         });
 
         await newTemplate.save();
@@ -64,8 +67,8 @@ exports.approveSubmission = async (req, res) => {
 
 exports.rejectSubmission = async (req, res) => {
     try {
-        await Submission.findByIdAndUpdate(req.params.id, { status: 'rejected' });
-        res.status(200).json({ message: 'Submission rejected' });
+        await Submission.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Submission rejected' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
