@@ -41,7 +41,7 @@
             <table class="table table-dark align-middle mb-0 table-hover">
                 <thead class="text-secondary small text-uppercase" style="font-family: 'Rajdhani', sans-serif;">
                 <tr>
-                    <th class="ps-4">ID / Date</th>
+                    <th class="ps-4">ID</th>
                     <th>Operator (User)</th>
                     <th>Protocol Name</th>
                     <th>Status</th>
@@ -78,20 +78,12 @@
                             <input type="text" id="reviewUser" class="form-control form-control-sm bg-dark text-muted border-0 rounded-0" readonly>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="text-secondary small">Original Description</label>
-                            <textarea id="reviewDesc" class="form-control form-control-sm bg-dark text-muted border-0 rounded-0" rows="2" readonly></textarea>
-                        </div>
-
                         <label class="text-warning small fw-bold mb-1">RAW BLUEPRINT STRING</label>
                         <div class="position-relative">
                             <textarea id="reviewCodeSource" class="form-control bg-black text-success font-monospace rounded-0 border-secondary small" rows="10" readonly></textarea>
                             <button onclick="copySourceCode()" class="btn btn-sm btn-light position-absolute top-0 end-0 m-2 rounded-0 opacity-75">
-                                <i class="bi bi-clipboard"></i> COPY FOR GAME
+                                <i class="bi bi-clipboard"></i> COPY
                             </button>
-                        </div>
-                        <div class="form-text text-muted small mt-1">
-                            <i class="bi bi-info-circle"></i> Copy this code, switch to Arknights: Endfield, and verify functionality.
                         </div>
                     </div>
 
@@ -120,13 +112,13 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="review-label">Verified Image URL (Screenshot)</label>
+                                <label class="review-label">Image URL</label>
                                 <div class="input-group">
-                                    <input type="url" id="editImg" class="form-control admin-input rounded-0" placeholder="Paste your screenshot link here...">
+                                    <input type="url" id="editImg" class="form-control admin-input rounded-0" placeholder="https://...">
                                     <button type="button" class="btn btn-outline-secondary rounded-0" onclick="testImage()">Test</button>
                                 </div>
                                 <div id="imgPreview" class="mt-2 border border-secondary bg-dark d-flex align-items-center justify-content-center text-muted small" style="height: 100px; overflow:hidden;">
-                                    NO IMAGE PREVIEW
+                                    NO PREVIEW
                                 </div>
                             </div>
 
@@ -142,12 +134,12 @@
 
             <div class="modal-footer border-top border-secondary bg-dark p-3 justify-content-between">
                 <button type="button" class="btn btn-outline-danger rounded-0" onclick="rejectSubmission()">
-                    <i class="bi bi-trash3-fill me-2"></i>REJECT & DELETE
+                    <i class="bi bi-trash3-fill me-2"></i>REJECT
                 </button>
                 <div>
                     <button type="button" class="btn btn-outline-light rounded-0 me-2" data-bs-dismiss="modal">CANCEL</button>
                     <button type="button" class="btn btn-cute rounded-0 px-4" onclick="approveAndPublish()">
-                        <i class="bi bi-check-lg me-2"></i>APPROVE & PUBLISH
+                        <i class="bi bi-check-lg me-2"></i>PUBLISH
                     </button>
                 </div>
             </div>
@@ -156,11 +148,13 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script src="app.js"></script>
 <script>
-    if(localStorage.getItem('role') !== 'admin') window.location.href = 'index.html';
-
-    loadSubmissions();
+    window.onload = function() {
+        if(typeof loadSubmissions === 'function') loadSubmissions();
+    };
 </script>
 </body>
 </html>

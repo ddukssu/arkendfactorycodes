@@ -5,16 +5,18 @@ const MATERIALS_DB = [
     "Concrete", "Reinforced Plate", "Energy Block"
 ];
 
-let selectedMaterials = [];
-let selectedModules = [];
-
-
 const MODULES_DB = [
     "Smelter", "Assembler", "Sorter", "Splitter",
     "Fluid Pump", "Refinery", "Storage Container",
     "Power Pole", "Thermal Tower", "Conveyor Belt"
 ];
+
 const API_URL = '/api';
+
+let selectedMaterials = [];
+let selectedModules = [];
+let currentSubmissions = [];
+let currentReviewId = null;
 
 function getToken() {
     return localStorage.getItem('token');
@@ -26,12 +28,10 @@ function getRole() {
 
 document.addEventListener('DOMContentLoaded', () => {
     updateSidebar();
-
     initDatalist('materialsOptions', MATERIALS_DB);
+    initDatalist('modulesOptions', MODULES_DB);
 
     if(document.getElementById('templateGrid')) loadTemplates();
-
-    const grid = document.getElementById('templateGrid');
 
     const searchInput = document.getElementById('searchInput');
     const materialFilter = document.getElementById('materialFilter');
@@ -39,9 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => loadTemplates(searchInput.value, materialFilter.value));
         materialFilter.addEventListener('change', () => loadTemplates(searchInput.value, materialFilter.value));
     }
-
-    initDatalist('materialsOptions', MATERIALS_DB);
-    initDatalist('modulesOptions', MODULES_DB);
 });
 
 function updateSidebar() {
@@ -64,6 +61,13 @@ function updateSidebar() {
         userMenu.classList.add('d-none');
     }
 }
+
+function initDatalist(id, items) {
+    const dl = document.getElementById(id);
+    if (!dl) return;
+    dl.innerHTML = items.map(i => `<option value="${i}">`).join('');
+}
+
 
 async function loadTemplates(search = '', material = '') {
     const grid = document.getElementById('templateGrid');
@@ -104,13 +108,94 @@ async function loadTemplates(search = '', material = '') {
                     </div>
                 </div>
             </div>
-        `).join(''); // Важно: .join('') превращает массив строк в одну большую строку HTML
+        `).join('');
     } catch (err) {
         console.error(err);
     }
 }
 
-// 2. ОБНОВЛЕННАЯ ОТПРАВКА ДАННЫХ (Width/Height)
+async function loadDetailView(id) {
+    const res = await fetch(`${API_URL}/templates/${id}`);
+    if(!res.ok) return alert('Template not found');
+
+    const t = await res.json();
+
+    document.getElementById('loading').classList.add('d-none');
+    document.getElementById('content').classList.remove('d-none');
+
+    document.getElementById('dTitle').innerText = t.title;
+    document.getElementById('dImg').src = t.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image';
+    document.getElementById('dEnergy').innerText = t.energy;
+    document.getElementById('dSpace').innerText = `${t.width || '?'} x ${t.height || '?'}`;
+    document.getElementById('dCode').innerText = t.code;
+    document.getElementById('dModules').innerText = t.modules.join(', ');
+
+    document.getElementById('dMats').innerHTML = t.materials.map(m =>
+        `<span class="badge bg-secondary me-1 p-2">${m.name}</span>`
+    ).join('');
+}
+
+function copyDetailCode() {
+    const code = document.getElementById('dCode').innerText;
+    navigator.clipboard.writeText(code);
+    alert('Copied to clipboard!');
+}
+
+
+function addTag(type) {
+    const input = document.getElementById(type === 'material' ? 'materialInput' : 'moduleInput');
+    if (!input) return;
+
+    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+
+    const val = input.value.trim();
+    if (!val) return;
+
+    if (storage.includes(val)) {
+        input.value = '';
+        return;
+    }
+
+    storage.push(val);
+    renderTags(type);
+    input.value = '';
+    input.focus();
+}
+
+function renderTags(type) {
+    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+
+    container.innerHTML = storage.map((item, index) => `
+        <span class="badge bg-warning text-dark rounded-0 d-flex align-items-center gap-2">
+            ${item}
+            <i class="bi bi-x-lg cursor-pointer" onclick="removeTag('${type}', ${index})" style="cursor:pointer"></i>
+        </span>
+    `).join('');
+}
+
+function removeTag(type, index) {
+    const storage = type === 'material' ? selectedMaterials : selectedModules;
+    storage.splice(index, 1);
+    renderTags(type);
+}
+
+function checkAuthAndSubmit() {
+    const form = document.getElementById('submitPageForm');
+    if(!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+
+    if (getToken()) {
+        submitData();
+    } else {
+        const modal = new bootstrap.Modal(document.getElementById('guestWarningModal'));
+        modal.show();
+    }
+}
+
 async function submitData() {
     if (selectedMaterials.length === 0 || selectedModules.length === 0) {
         alert('Please select at least one Material and one Module.');
@@ -118,18 +203,14 @@ async function submitData() {
     }
 
     const materialsPayload = selectedMaterials.map(s => ({ name: s }));
-
-    // Получаем значения ширины и высоты
     const widthVal = document.getElementById('sWidth').value;
     const heightVal = document.getElementById('sHeight').value;
 
     const payload = {
         title: document.getElementById('sTitle').value,
         energy: document.getElementById('sEnergy').value,
-        // Новые поля
         width: widthVal,
         height: heightVal,
-
         imageUrl: document.getElementById('sImg').value,
         code: document.getElementById('sCode').value,
         materials: materialsPayload,
@@ -155,34 +236,122 @@ async function submitData() {
     }
 }
 
-async function loadDetailView(id) {
-    const res = await fetch(`${API_URL}/templates/${id}`);
-    if(!res.ok) return alert('Template not found');
 
-    const t = await res.json();
+async function loadSubmissions() {
+    const table = document.getElementById('submissionTable');
+    if (!table) return;
 
-    document.getElementById('loading').classList.add('d-none');
-    document.getElementById('content').classList.remove('d-none');
+    try {
+        const res = await fetch(`${API_URL}/submissions`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
 
-    document.getElementById('dTitle').innerText = t.title;
-    document.getElementById('dImg').src = t.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image';
-    document.getElementById('dEnergy').innerText = t.energy;
+        if (!res.ok) return;
+        currentSubmissions = await res.json();
 
-    document.getElementById('dSpace').innerText = `${t.width || '?'} x ${t.height || '?'}`;
-
-    document.getElementById('dCode').innerText = t.code;
-    document.getElementById('dModules').innerText = t.modules.join(', ');
-
-    document.getElementById('dMats').innerHTML = t.materials.map(m =>
-        `<span class="badge bg-secondary me-1 p-2">${m.name}</span>`
-    ).join('');
+        table.innerHTML = currentSubmissions.map(s => `
+            <tr>
+                <td class="ps-4 font-monospace small text-muted">#${s._id.slice(-4)}</td>
+                <td><span class="text-white">${s.userId ? s.userId.email : 'Anonymous'}</span></td>
+                <td class="text-warning">${s.title}</td>
+                <td><span class="status-badge text-warning border-warning">PENDING</span></td>
+                <td class="text-end pe-4">
+                    <button onclick="openReviewModal('${s._id}')" class="btn btn-sm btn-cute rounded-0">
+                        <i class="bi bi-eye-fill me-1"></i> INSPECT
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+    }
 }
 
+function openReviewModal(id) {
+    const s = currentSubmissions.find(sub => sub._id === id);
+    if (!s) return;
 
-function copyDetailCode() {
-    const code = document.getElementById('dCode').innerText;
+    currentReviewId = id;
+
+    document.getElementById('reviewUser').value = s.userId ? s.userId.email : 'Anonymous';
+    document.getElementById('reviewCodeSource').value = s.code;
+
+    document.getElementById('editTitle').value = s.title;
+    document.getElementById('editEnergy').value = s.energy;
+    document.getElementById('editWidth').value = s.width || 32;
+    document.getElementById('editHeight').value = s.height || 32;
+    document.getElementById('editImg').value = s.imageUrl || '';
+
+    const matsString = s.materials ? s.materials.map(m => m.name).join(', ') : '';
+    document.getElementById('editMats').value = matsString;
+
+    testImage();
+
+    const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    modal.show();
+}
+
+async function approveAndPublish() {
+    if (!currentReviewId) return;
+
+    const payload = {
+        title: document.getElementById('editTitle').value,
+        energy: document.getElementById('editEnergy').value,
+        width: document.getElementById('editWidth').value,
+        height: document.getElementById('editHeight').value,
+        imageUrl: document.getElementById('editImg').value,
+        materials: document.getElementById('editMats').value.split(',').map(s => ({ name: s.trim() }))
+    };
+
+    try {
+        const res = await fetch(`${API_URL}/submissions/${currentReviewId}/approve`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert('Protocol Verified & Published!');
+            window.location.reload();
+        } else {
+            const err = await res.json();
+            alert('Error: ' + err.error);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Failed to connect to server');
+    }
+}
+
+async function rejectSubmission() {
+    if (!currentReviewId) return;
+    if(!confirm('Are you sure you want to delete this submission?')) return;
+
+    const res = await fetch(`${API_URL}/submissions/${currentReviewId}/reject`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${getToken()}` }
+    });
+
+    if (res.ok) window.location.reload();
+}
+
+function copySourceCode() {
+    const code = document.getElementById('reviewCodeSource').value;
     navigator.clipboard.writeText(code);
-    alert('Copied to clipboard!');
+    alert('Code copied! Check in game.');
+}
+
+function testImage() {
+    const url = document.getElementById('editImg').value;
+    const box = document.getElementById('imgPreview');
+    if(url) {
+        box.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
+    } else {
+        box.innerHTML = 'NO IMAGE PREVIEW';
+    }
 }
 
 const loginForm = document.getElementById('loginForm');
@@ -244,98 +413,4 @@ if (registerForm) {
 function logout() {
     localStorage.clear();
     window.location.href = 'index.html';
-}
-
-function checkAuthAndSubmit() {
-    const form = document.getElementById('submitPageForm');
-    if(!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-
-    if (getToken()) {
-        submitData();
-    } else {
-        const modal = new bootstrap.Modal(document.getElementById('guestWarningModal'));
-        modal.show();
-    }
-}
-function initDatalist(id, items) {
-    const dl = document.getElementById(id);
-    if (!dl) return;
-    dl.innerHTML = items.map(i => `<option value="${i}">`).join('');
-}
-
-function addTag(type) {
-    const input = document.getElementById(type === 'material' ? 'materialInput' : 'moduleInput');
-    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
-    const storage = type === 'material' ? selectedMaterials : selectedModules;
-
-    const val = input.value.trim();
-    if (!val) return;
-
-    if (storage.includes(val)) {
-        input.value = '';
-        return;
-    }
-
-    storage.push(val);
-    renderTags(type);
-    input.value = '';
-    input.focus();
-}
-
-function renderTags(type) {
-    const container = document.getElementById(type === 'material' ? 'matsTags' : 'modsTags');
-    const storage = type === 'material' ? selectedMaterials : selectedModules;
-
-    container.innerHTML = storage.map((item, index) => `
-        <span class="badge bg-warning text-dark rounded-0 d-flex align-items-center gap-2">
-            ${item}
-            <i class="bi bi-x-lg cursor-pointer" onclick="removeTag('${type}', ${index})" style="cursor:pointer"></i>
-        </span>
-    `).join('');
-}
-
-function removeTag(type, index) {
-    const storage = type === 'material' ? selectedMaterials : selectedModules;
-    storage.splice(index, 1);
-    renderTags(type);
-}
-
-
-async function loadSubmissions() {
-    const table = document.getElementById('submissionTable');
-    if (!table) return;
-
-    const res = await fetch(`${API_URL}/submissions`, {
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    if (!res.ok) return;
-    const data = await res.json();
-
-    table.innerHTML = data.map(s => `
-        <tr>
-            <td>${s.title}</td>
-            <td>${s.userId ? s.userId.email : '<span class="badge bg-secondary">Anonymous</span>'}</td>
-            <td>${s.materials.map(m => m.name).join(', ')}</td>
-            <td><small class="text-muted">${s.code.substring(0, 20)}...</small></td>
-            <td>
-                <button onclick="adminAction('${s._id}', 'approve')" class="btn btn-sm btn-success rounded-pill">Approve</button>
-                <button onclick="adminAction('${s._id}', 'reject')" class="btn btn-sm btn-outline-danger rounded-pill">Reject</button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-async function adminAction(id, action) {
-    const res = await fetch(`${API_URL}/submissions/${id}/${action}`, {
-        method: 'PUT',
-        headers: { 'Authorization': `Bearer ${getToken()}` }
-    });
-
-    if (res.ok) {
-        loadSubmissions();
-    }
 }

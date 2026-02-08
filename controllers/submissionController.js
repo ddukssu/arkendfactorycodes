@@ -25,7 +25,6 @@ exports.createSubmission = async (req, res) => {
 
 exports.getPendingSubmissions = async (req, res) => {
     try {
-        // Populate if user exists, otherwise we handle "Anonymous" in frontend
         const submissions = await Submission.find({ status: 'pending' }).populate('userId', 'email');
         res.status(200).json(submissions);
     } catch (error) {
@@ -39,16 +38,19 @@ exports.approveSubmission = async (req, res) => {
         if (!submission) return res.status(404).json({ message: 'Submission not found' });
 
         const newTemplate = new Template({
-            title: submission.title,
-            code: submission.code,
-            imageUrl: submission.imageUrl,
+            title: req.body.title || submission.title,
+            width: req.body.width || submission.width,
+            height: req.body.height || submission.height,
+            energy: req.body.energy || submission.energy,
+
+            imageUrl: req.body.imageUrl || submission.imageUrl,
+
+            materials: req.body.materials || submission.materials,
             modules: submission.modules,
-            width: submission.width,
-            height: submission.height,
-            energy: submission.energy,
-            materials: submission.materials,
-            userId: submission.userId,
-            authorName: submission.authorName
+            code: submission.code,
+
+            userId: submission.userId ? submission.userId._id : null,
+            authorName: submission.authorName || (submission.userId ? submission.userId.email : 'Anonymous')
         });
 
         await newTemplate.save();
