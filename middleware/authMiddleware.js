@@ -6,7 +6,7 @@ exports.verifyToken = (req, res, next) => {
 
     jwt.verify(token.split(' ')[1], process.env.JWT_SECRET, (err, decoded) => {
         if (err) return res.status(401).json({ message: 'Unauthorized' });
-        req.userId = decoded.id;
+        req.userId = decoded.userId;
         req.userRole = decoded.role;
         next();
     });
@@ -22,7 +22,7 @@ exports.optionalAuth = (req, res, next) => {
     jwt.verify(token.split(' ')[1], process.env.JWT_SECRET, (err, decoded) => {
         if (err) req.userId = null;
         else {
-            req.userId = decoded.id;
+            req.userId = decoded.userId;
             req.userRole = decoded.role;
         }
         next();

@@ -86,7 +86,14 @@ async function loadTemplates(search = '', material = '') {
             return;
         }
 
-        grid.innerHTML = templates.map(t => `
+        grid.innerHTML = templates.map(t => {
+            const deleteBtn = getRole() === 'admin'
+                ? `<button onclick="deletePublishedTemplate('${t._id}')" class="btn btn-sm btn-outline-danger rounded-0 ms-1" title="Delete Protocol">
+             <i class="bi bi-trash3-fill"></i>
+            </button>`
+                : '';
+
+            return `
             <div class="col-md-6 col-lg-4">
                 <div class="card blueprint-card h-100">
                     <div class="card-body d-flex flex-column">
@@ -100,15 +107,20 @@ async function loadTemplates(search = '', material = '') {
                         <p class="card-text text-secondary small mb-2">
                             Output: <span class="text-light">${t.materials.map(m => m.name).join(', ')}</span>
                         </p>
-
+        
                         <div class="mt-auto pt-3 border-top border-secondary-subtle d-flex justify-content-between align-items-center">
                             <small class="text-muted"><i class="bi bi-person"></i> ${t.authorName || 'Unknown'}</small>
-                            <a href="detail.html?id=${t._id}" class="btn btn-sm btn-outline-light rounded-0">VIEW PROTOCOL</a>
+                            
+                            <div class="d-flex">
+                                <a href="detail.html?id=${t._id}" class="btn btn-sm btn-outline-light rounded-0">VIEW</a>
+                                ${deleteBtn}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `).join('');
+            `;
+        }).join('');
     } catch (err) {
         console.error(err);
     }
@@ -252,7 +264,7 @@ async function loadSubmissions() {
         table.innerHTML = currentSubmissions.map(s => `
             <tr>
                 <td class="ps-4 font-monospace small text-muted">#${s._id.slice(-4)}</td>
-                <td><span class="text-white">${s.userId ? s.userId.email : 'Anonymous'}</span></td>
+                <td><span class="text-white">${s.authorName || 'Anonymous'}</span></td>
                 <td class="text-warning">${s.title}</td>
                 <td><span class="status-badge text-warning border-warning">PENDING</span></td>
                 <td class="text-end pe-4">
@@ -273,7 +285,7 @@ function openReviewModal(id) {
 
     currentReviewId = id;
 
-    document.getElementById('reviewUser').value = s.userId ? s.userId.email : 'Anonymous';
+    document.getElementById('reviewUser').value = s.authorName || 'Anonymous';
     document.getElementById('reviewCodeSource').value = s.code;
 
     document.getElementById('editTitle').value = s.title;
@@ -351,6 +363,28 @@ function testImage() {
         box.innerHTML = `<img src="${url}" style="width:100%; height:100%; object-fit:cover;">`;
     } else {
         box.innerHTML = 'NO IMAGE PREVIEW';
+    }
+}
+
+async function deletePublishedTemplate(id) {
+    if (!confirm('WARNING: This will permanently delete this protocol from the public database. Proceed?')) return;
+
+    try {
+        const res = await fetch(`${API_URL}/templates/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+
+        if (res.ok) {
+            alert('Protocol deleted successfully.');
+            loadTemplates();
+        } else {
+            const err = await res.json();
+            alert('Error: ' + err.error);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('Server error');
     }
 }
 

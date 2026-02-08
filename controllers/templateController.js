@@ -39,10 +39,23 @@ exports.createTemplate = async (req, res) => {
     }
 };
 
+exports.updateTemplate = async (req, res) => {
+    try {
+        const updatedTemplate = await Template.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        res.json(updatedTemplate);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.deleteTemplate = async (req, res) => {
     try {
         await Template.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: 'Template deleted' });
+        res.json({ message: 'Template deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
