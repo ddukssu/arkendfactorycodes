@@ -44,8 +44,8 @@ async function loadTemplates() {
     const maxEnergy = document.getElementById('energyFilter')?.value || '';
 
     let url = `${API_URL}/templates?`;
-    if (search) url += `search=${search}`
-    if (material) url += `material=${material}`;
+    if (search) url += `search=${search}&`;
+    if (material) url += `material=${material}&`;
     if (maxEnergy) url += `maxEnergy=${maxEnergy}`;
 
     try {
