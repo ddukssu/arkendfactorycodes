@@ -34,7 +34,7 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
     height: 40px;
     background: var(--endfield-surface);
     border: 1px solid var(--endfield-border);
-    border-radius: 8px; /* Tech-square look */
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -52,7 +52,6 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
     text-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
 }
 
-/* --- Inputs & Search --- */
 .form-control, .form-select {
     background-color: var(--endfield-surface);
     border: 1px solid var(--endfield-border);
@@ -68,14 +67,14 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
     color: #fff;
 }
 
-.btn-cute { /* Re-styled to Industrial */
+.btn-cute {
     background-color: var(--endfield-yellow);
     color: #000;
     font-weight: 700;
     border: none;
     border-radius: 2px;
     padding: 10px 20px;
-    clip-path: polygon(0 0, 100% 0, 100% 85%, 92% 100%, 0 100%); /* Tech angle */
+    clip-path: polygon(0 0, 100% 0, 100% 85%, 92% 100%, 0 100%);
 }
 
 .btn-cute:hover {
@@ -258,7 +257,7 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
 }
 
 .form-control {
-    background-color: #0f1014; /* Darker input background */
+    background-color: #0f1014;
     border: 1px solid var(--endfield-border, #444);
     color: #fff;
     border-radius: 2px;
@@ -275,4 +274,29 @@ h1, h2, h3, h4, h5, .navbar-brand, .btn {
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
     color: var(--endfield-yellow, #FFC107);
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main, .container {
+    flex: 1;
+}
+
+.site-footer {
+    background-color: #1a1a1a;
+    font-size: 0.85rem;
+    margin-top: auto;
+}
+
+.site-footer a {
+    color: #6c757d;
+    text-decoration: none;
+}
+
+.site-footer a:hover {
+    color: #ffc107;
 }

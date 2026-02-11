@@ -2,7 +2,7 @@ const Template = require('../models/Template');
 
 exports.getAllTemplates = async (req, res) => {
     try {
-        const { search, material } = req.query;
+        const { search, material, maxEnergy } = req.query;
         let query = {};
 
         if (search) {
@@ -10,6 +10,9 @@ exports.getAllTemplates = async (req, res) => {
         }
         if (material) {
             query['materials.name'] = material;
+        }
+        if (maxEnergy) {
+            query.energy = { $lte: Number(maxEnergy) };
         }
 
         const templates = await Template.find(query);
