@@ -52,8 +52,8 @@ function updateSidebar() {
 async function handleLogin(e) {
     e.preventDefault()
 
-    const email = e.document.getElementById("loginEmail").value;
-    const password = e.document.getElementById("loginPass").value;
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPass").value;
 
     try {
         const res = await fetch(API_URL + "/auth/login", {

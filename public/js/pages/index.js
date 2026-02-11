@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("searchInput");
     const materialInput = document.getElementById("materialFilter");
     const energyFilter = document.getElementById('energyFilter');
+    const clearBtn = document.getElementById('clearSearchBtn');
 
     if (searchInput) {
         searchInput.addEventListener("input", () => loadTemplates(searchInput.value, materialInput.value));
@@ -18,6 +19,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (energyFilter) {
         energyFilter.addEventListener('input', () => loadTemplates());
+    }
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('materialFilter').value = '';
+            document.getElementById('energyFilter').value = '';
+            loadTemplates();
+        });
     }
 });
 
@@ -49,7 +58,7 @@ async function loadTemplates() {
         }
 
         grid.innerHTML = templates.map(t => {
-            const deleteBtn = getRole() === "admin" ? `<button class="btn btn-sm btn-outline-danger rounded-0 ms-1 delete-btn" data-id="{$t._id}"><i class="bi bi-trash3-fill"></i></button>` : '';
+            const deleteBtn = getRole() === "admin" ? `<button class="btn btn-sm btn-outline-danger rounded-0 ms-1 delete-btn" data-id="${t._id}"><i class="bi bi-trash3-fill"></i></button>` : '';
 
             return `
             <div class="col-md-6 col-lg-4">
